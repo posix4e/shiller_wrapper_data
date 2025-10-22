@@ -8,11 +8,37 @@ import sys
 import urllib.request
 import hashlib
 from datetime import datetime
+from bs4 import BeautifulSoup
 
-DATA_FILES = {
-    "Fig3-1.xls": "http://www.econ.yale.edu/~shiller/data/Fig3-1.xls",
-    "ie_data.xls": "http://www.econ.yale.edu/~shiller/data/ie_data.xls"
-}
+def scrape_download_urls():
+    """Scrape the download URLs from shillerdata.com"""
+    print("Scraping download URLs from shillerdata.com...")
+
+    with urllib.request.urlopen('https://shillerdata.com/') as response:
+        html = response.read().decode('utf-8')
+
+    soup = BeautifulSoup(html, 'html.parser')
+    urls = {}
+
+    # Find all download links
+    for link in soup.find_all('a', href=True):
+        href = link['href']
+        # Look for .xls files in the href
+        if 'ie_data.xls' in href:
+            urls['ie_data.xls'] = 'https:' + href if href.startswith('//') else href
+            print(f"✓ Found ie_data.xls URL")
+        elif 'Fig3-1' in href and '.xls' in href:
+            urls['Fig3-1.xls'] = 'https:' + href if href.startswith('//') else href
+            print(f"✓ Found Fig3-1.xls URL")
+
+    # Fail if we didn't find both URLs
+    if 'ie_data.xls' not in urls:
+        raise RuntimeError("Failed to scrape ie_data.xls download URL from shillerdata.com")
+
+    if 'Fig3-1.xls' not in urls:
+        raise RuntimeError("Failed to scrape Fig3-1.xls download URL from shillerdata.com")
+
+    return urls
 
 def download_file(url, filename):
     """Download a file from URL to filename"""
@@ -36,7 +62,10 @@ def main():
     """Main function to download all data files"""
     changes = []
 
-    for filename, url in DATA_FILES.items():
+    # Scrape the latest download URLs
+    data_files = scrape_download_urls()
+
+    for filename, url in data_files.items():
         old_hash = get_file_hash(filename)
 
         if download_file(url, filename):
