@@ -22,3 +22,11 @@ venv/
 
 # Logs
 *.log
+
+# Data files - not tracked in git, only built and deployed
+*.xls
+*.xlsx
+*.json
+*.csv
+_site/
+docs/

@@ -1,18 +1,20 @@
 # Shiller Data Repository
 
-This repository automatically downloads and tracks historical changes to Robert Shiller's stock market and economic data files.
+This repository automatically downloads Robert Shiller's stock market and economic data and publishes it to GitHub Pages. The data files are NOT tracked in git history - only the code is versioned.
 
 ## Data Files
 
+The following files are generated and published to GitHub Pages:
 - `Fig3-1.xls` - Figure 3.1 data from "Irrational Exuberance"
 - `ie_data.xls` - Full dataset with stock prices, earnings, dividends, and P/E ratios since 1871
+- JSON and CSV versions of the data
 
 ## Automated Updates
 
 This repository uses GitHub Actions to:
-- **Check for updates on every push** to main/master branch
 - **Run weekly updates** every Monday at 9:00 AM UTC
 - **Manual updates** can be triggered from the Actions tab
+- **Deploy directly to GitHub Pages** without committing data files to git
 
 ## Manual Download
 

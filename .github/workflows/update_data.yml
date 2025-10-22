@@ -1,15 +1,13 @@
 name: Update Shiller Data and Deploy Site
 
 on:
-  push:
-    branches: [ main, master ]
   schedule:
     # Run every Monday at 9:00 AM UTC (at least once a week)
     - cron: '0 9 * * 1'
   workflow_dispatch:  # Allow manual triggering
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -20,8 +18,6 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -45,21 +41,12 @@ jobs:
       run: |
         python generate_site.py
 
-    - name: Check for changes
-      id: check_changes
-      run: |
-        if [[ -n $(git status --porcelain) ]]; then
-          echo "changes=true" >> $GITHUB_OUTPUT
-        else
-          echo "changes=false" >> $GITHUB_OUTPUT
-        fi
+    - name: Upload to GitHub Pages
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: '_site'
 
-    - name: Commit and push if changed
-      if: steps.check_changes.outputs.changes == 'true'
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add -A
-        git commit -m "Update Shiller data and rebuild site - $(date '+%Y-%m-%d')"
-        git push
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
 
