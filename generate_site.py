@@ -10,6 +10,10 @@ from datetime import datetime
 def generate_html():
     """Generate the main index.html file"""
 
+    # Create _site directory for GitHub Pages
+    os.makedirs('_site', exist_ok=True)
+    os.makedirs('_site/data', exist_ok=True)
+
     # Load latest data for examples
     latest = {}
     try:
@@ -244,9 +248,29 @@ print(f"S&P 500: {{latest['sp500']}}")</code></pre>
 </body>
 </html>'''
 
-    with open('index.html', 'w') as f:
+    with open('_site/index.html', 'w') as f:
         f.write(html_content)
-    print("✓ Generated index.html")
+    print("✓ Generated _site/index.html")
+
+    # Copy data files to _site
+    import shutil
+    for filename in os.listdir('data'):
+        src = os.path.join('data', filename)
+        dst = os.path.join('_site/data', filename)
+        if os.path.isfile(src):
+            shutil.copy2(src, dst)
+    print("✓ Copied data files to _site/data/")
+
+    # Copy Excel files to _site
+    for xls_file in ['ie_data.xls', 'Fig3-1.xls']:
+        if os.path.exists(xls_file):
+            shutil.copy2(xls_file, '_site/')
+    print("✓ Copied Excel files to _site/")
+
+    # Copy style.css if it exists
+    if os.path.exists('style.css'):
+        shutil.copy2('style.css', '_site/')
+        print("✓ Copied style.css to _site/")
 
 def main():
     print("Generating static site...")
