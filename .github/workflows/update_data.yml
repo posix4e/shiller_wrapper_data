@@ -1,6 +1,8 @@
 name: Update Shiller Data and Deploy Site
 
 on:
+  push:
+    branches: [ main, master ]
   schedule:
     # Run every Monday at 9:00 AM UTC (at least once a week)
     - cron: '0 9 * * 1'
