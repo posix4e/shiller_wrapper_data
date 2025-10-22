@@ -26,12 +26,18 @@ def parse_ie_data():
         column_mapping = {
             'Date': 'date',
             'S&P Comp.': 'sp500',
+            'P': 'sp500',  # shillerdata.com uses 'P' instead of 'S&P Comp.'
             'Dividend': 'dividend',
+            'D': 'dividend',  # shillerdata.com uses 'D'
             'Earnings': 'earnings',
+            'E': 'earnings',  # shillerdata.com uses 'E'
             'CPI': 'cpi',
             'Date.1': 'date_fraction',
+            'Fraction': 'date_fraction',  # shillerdata.com uses 'Fraction'
             'Long Interest Rate GS10': 'long_interest_rate',
+            'Rate GS10': 'long_interest_rate',  # shillerdata.com uses 'Rate GS10'
             'Real Price': 'real_price',
+            'Price': 'real_price',  # shillerdata.com uses 'Price'
             'Real Dividend': 'real_dividend',
             'Real Total Return Price': 'real_total_return_price',
             'Real Earnings': 'real_earnings',
