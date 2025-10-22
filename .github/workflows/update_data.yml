@@ -1,4 +1,4 @@
-name: Update Shiller Data
+name: Update Shiller Data and Deploy Site
 
 on:
   push:
@@ -8,8 +8,13 @@ on:
     - cron: '0 9 * * 1'
   workflow_dispatch:  # Allow manual triggering
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
-  update-data:
+  update-data-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,10 +28,22 @@ jobs:
       with:
         python-version: '3.11'
 
+    - name: Install Python dependencies
+      run: |
+        pip install pandas openpyxl xlrd
+
     - name: Download latest data
       run: |
         python download_shiller_data.py
       continue-on-error: false
+
+    - name: Parse data to JSON/CSV
+      run: |
+        python parse_shiller_data.py
+
+    - name: Generate website
+      run: |
+        python generate_site.py
 
     - name: Check for changes
       id: check_changes
@@ -42,6 +59,18 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add *.xls
-        git commit -m "Update Shiller data - $(date '+%Y-%m-%d')"
+        git add -A
+        git commit -m "Update Shiller data and rebuild site - $(date '+%Y-%m-%d')"
         git push
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: '.'
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4

@@ -1,0 +1,17 @@
+{
+  "stock_market": {
+    "date": "2025-10-01",
+    "sp500": null,
+    "cape": 39.50669768740402,
+    "dividend_yield": null,
+    "earnings": null,
+    "cpi": 324.67199999999997
+  },
+  "home_prices": {
+    "date": null,
+    "real_home_price_index": null,
+    "building_cost_index": null,
+    "us_population_millions": null
+  },
+  "last_updated": "2025-10-22T09:15:26.444014"
+}

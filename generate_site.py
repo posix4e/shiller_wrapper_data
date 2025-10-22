@@ -1,0 +1,257 @@
+#!/usr/bin/env python3
+"""
+Generate static HTML site for Shiller Data API
+"""
+
+import json
+import os
+from datetime import datetime
+
+def generate_html():
+    """Generate the main index.html file"""
+
+    # Load latest data for examples
+    latest = {}
+    try:
+        with open('data/latest.json', 'r') as f:
+            latest = json.load(f)
+    except:
+        pass
+
+    cape_value = latest.get('stock_market', {}).get('cape', 'N/A')
+    sp500_value = latest.get('stock_market', {}).get('sp500', 'N/A')
+    last_date = latest.get('stock_market', {}).get('date', 'N/A')
+
+    html_content = f'''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Shiller Data API - Historical Stock Market & Economic Data</title>
+    <meta name="description" content="Free API for Robert Shiller's historical stock market data including S&P 500, CAPE ratio, dividends, earnings, and home prices since 1871.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Free Shiller Data API</h1>
+            <p class="tagline">Historical stock market and economic data from Robert Shiller's research</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <div class="hero-content">
+                <h2>Access 150+ Years of Market Data</h2>
+                <p>Free REST API providing Robert Shiller's Nobel Prize-winning research data including the S&P 500, CAPE ratio, earnings, dividends, and U.S. home prices.</p>
+                <div class="stats">
+                    <div class="stat">
+                        <span class="label">Current CAPE</span>
+                        <span class="value">{f"{cape_value:.2f}" if isinstance(cape_value, (int, float)) else str(cape_value)}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="label">S&P 500</span>
+                        <span class="value">{f"{sp500_value:.2f}" if isinstance(sp500_value, (int, float)) else str(sp500_value)}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="label">Last Updated</span>
+                        <span class="value">{last_date}</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="endpoints">
+            <h2>API Endpoints</h2>
+            <p class="section-intro">All endpoints return JSON data. No authentication required.</p>
+
+            <div class="endpoint">
+                <h3>Latest Values</h3>
+                <p>Get the most recent data points for quick access</p>
+                <div class="endpoint-url">
+                    <code>GET /data/latest.json</code>
+                    <button class="copy-btn" onclick="copyToClipboard('/data/latest.json')">Copy</button>
+                </div>
+                <details>
+                    <summary>View Response</summary>
+                    <pre><code>{{
+  "stock_market": {{
+    "date": "{last_date}",
+    "sp500": {sp500_value},
+    "cape": {cape_value},
+    "dividend_yield": 1.34,
+    "earnings": 197.45,
+    "cpi": 310.33
+  }},
+  "home_prices": {{
+    "date": "2024-01-01",
+    "real_home_price_index": 206.85,
+    "building_cost_index": 140.21
+  }}
+}}</code></pre>
+                </details>
+            </div>
+
+            <div class="endpoint">
+                <h3>Stock Market Data (Full History)</h3>
+                <p>Complete S&P 500 data including prices, earnings, dividends, and CAPE ratio since 1871</p>
+                <div class="endpoint-url">
+                    <code>GET /data/stock_market_data.json</code>
+                    <button class="copy-btn" onclick="copyToClipboard('/data/stock_market_data.json')">Copy</button>
+                </div>
+                <div class="formats">
+                    Also available as: <a href="/data/stock_market_data.csv">CSV</a>
+                </div>
+                <details>
+                    <summary>View Fields</summary>
+                    <ul class="field-list">
+                        <li><strong>date_string</strong>: Date in YYYY-MM-DD format</li>
+                        <li><strong>sp500</strong>: S&P 500 Composite Index</li>
+                        <li><strong>dividend</strong>: Dividends per share</li>
+                        <li><strong>earnings</strong>: Earnings per share</li>
+                        <li><strong>cpi</strong>: Consumer Price Index</li>
+                        <li><strong>cape</strong>: Cyclically Adjusted PE Ratio (Shiller PE)</li>
+                        <li><strong>real_price</strong>: Inflation-adjusted S&P 500 price</li>
+                        <li><strong>real_dividend</strong>: Inflation-adjusted dividends</li>
+                        <li><strong>real_earnings</strong>: Inflation-adjusted earnings</li>
+                        <li><strong>long_interest_rate</strong>: 10-Year Treasury Rate</li>
+                    </ul>
+                </details>
+            </div>
+
+            <div class="endpoint">
+                <h3>Home Price Data</h3>
+                <p>U.S. real home price index and related data since 1890</p>
+                <div class="endpoint-url">
+                    <code>GET /data/home_price_data.json</code>
+                    <button class="copy-btn" onclick="copyToClipboard('/data/home_price_data.json')">Copy</button>
+                </div>
+                <div class="formats">
+                    Also available as: <a href="/data/home_price_data.csv">CSV</a>
+                </div>
+                <details>
+                    <summary>View Fields</summary>
+                    <ul class="field-list">
+                        <li><strong>date_string</strong>: Date in YYYY-MM-DD format</li>
+                        <li><strong>real_home_price_index</strong>: Inflation-adjusted home price index</li>
+                        <li><strong>building_cost_index</strong>: Construction cost index</li>
+                        <li><strong>us_population_millions</strong>: U.S. population in millions</li>
+                        <li><strong>long_rate</strong>: Long-term interest rate</li>
+                    </ul>
+                </details>
+            </div>
+        </section>
+
+        <section class="usage">
+            <h2>Usage Examples</h2>
+
+            <div class="example">
+                <h3>JavaScript / Fetch</h3>
+                <pre><code>fetch('https://yourusername.github.io/shiller_wrapper_data/data/latest.json')
+  .then(response => response.json())
+  .then(data => {{
+    console.log('Current CAPE Ratio:', data.stock_market.cape);
+    console.log('S&P 500:', data.stock_market.sp500);
+  }});</code></pre>
+            </div>
+
+            <div class="example">
+                <h3>Python</h3>
+                <pre><code>import requests
+
+response = requests.get('https://yourusername.github.io/shiller_wrapper_data/data/stock_market_data.json')
+data = response.json()
+
+# Get the latest CAPE ratio
+latest = data['data'][-1]
+print(f"CAPE Ratio: {{latest['cape']}}")
+print(f"S&P 500: {{latest['sp500']}}")</code></pre>
+            </div>
+
+            <div class="example">
+                <h3>curl</h3>
+                <pre><code>curl https://yourusername.github.io/shiller_wrapper_data/data/latest.json</code></pre>
+            </div>
+        </section>
+
+        <section class="about">
+            <h2>About the Data</h2>
+            <div class="about-content">
+                <p>This API provides free access to data compiled by <strong>Robert J. Shiller</strong>, Sterling Professor of Economics at Yale University and Nobel Laureate in Economics (2013).</p>
+
+                <h3>Data Sources</h3>
+                <ul>
+                    <li><strong>Stock Market Data:</strong> Monthly S&P 500 data since 1871, including the famous CAPE (Cyclically Adjusted PE) ratio used for market valuation</li>
+                    <li><strong>Home Price Data:</strong> U.S. real estate prices since 1890, forming the basis of the Case-Shiller Home Price Index</li>
+                </ul>
+
+                <h3>Update Frequency</h3>
+                <p>Data is automatically updated weekly from Professor Shiller's official sources at Yale University.</p>
+
+                <h3>Academic Use</h3>
+                <p>This data is widely used in academic research and has been featured in Shiller's book "Irrational Exuberance" and numerous economic studies.</p>
+            </div>
+        </section>
+
+        <section class="footer-info">
+            <h2>Additional Information</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>📊 Raw Data Files</h3>
+                    <p>Original Excel files from Yale:</p>
+                    <ul>
+                        <li><a href="/ie_data.xls">ie_data.xls</a> - Complete dataset</li>
+                        <li><a href="/Fig3-1.xls">Fig3-1.xls</a> - Home prices</li>
+                    </ul>
+                </div>
+                <div class="info-card">
+                    <h3>🔗 Official Sources</h3>
+                    <p>Data sourced from:</p>
+                    <ul>
+                        <li><a href="http://www.econ.yale.edu/~shiller/data.htm" target="_blank">Shiller's Yale Page</a></li>
+                        <li><a href="http://www.irrationalexuberance.com" target="_blank">Irrational Exuberance</a></li>
+                    </ul>
+                </div>
+                <div class="info-card">
+                    <h3>💻 Open Source</h3>
+                    <p>This API is open source:</p>
+                    <ul>
+                        <li><a href="https://github.com/yourusername/shiller_wrapper_data" target="_blank">GitHub Repository</a></li>
+                        <li>MIT License</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Data by Robert Shiller, Yale University | API updated weekly | <a href="https://github.com/yourusername/shiller_wrapper_data">GitHub</a></p>
+            <p class="disclaimer">This is an unofficial API. For official data, visit <a href="http://www.econ.yale.edu/~shiller/data.htm">Yale's website</a>.</p>
+        </div>
+    </footer>
+
+    <script>
+        function copyToClipboard(text) {{
+            const fullUrl = window.location.origin + text;
+            navigator.clipboard.writeText(fullUrl);
+            event.target.textContent = 'Copied!';
+            setTimeout(() => {{
+                event.target.textContent = 'Copy';
+            }}, 2000);
+        }}
+    </script>
+</body>
+</html>'''
+
+    with open('index.html', 'w') as f:
+        f.write(html_content)
+    print("✓ Generated index.html")
+
+def main():
+    print("Generating static site...")
+    generate_html()
+    print("Site generation complete!")
+
+if __name__ == "__main__":
+    main()
