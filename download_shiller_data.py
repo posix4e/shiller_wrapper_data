@@ -55,10 +55,11 @@ def main():
         print(f"\n{len(changes)} file(s) changed:")
         for change in changes:
             print(f"  - {change}")
-        return 0
     else:
         print("\nNo changes detected in data files")
-        return 1
+
+    # Always return 0 (success) even if no changes
+    return 0
 
 if __name__ == "__main__":
     sys.exit(main())
